@@ -1,0 +1,31 @@
+# Placeholder: Tabela FIPE (referência, não preço de anúncio) — terceiros ou serviço escolhido
+# Use para atributos de preço de referência / comparação com anúncios. Copy to config/local/fipe.yaml.
+# Há diversos provedores; preencha base_url e chave conforme o serviço que você usar.
+# Exemplos de ecossistema (não endosso comercial): apifipe.com.br, tabelafipeapi, fipe.api.br, deividfortuna/fipe (GitHub).
+
+version: 1
+source_id: fipe
+
+auth:
+  api_key: ""
+  # Alguns serviços usam token ou requisições anônimas com limite; ajuste conforme o provedor.
+
+endpoints:
+  provider: ""
+  # base_url: ""   # URL base do serviço escolhido
+  # Nomes usuais de rotas: marcas, modelos, anos, tabela (consultar documentação do provedor)
+
+# Veículo de referência para testes (preencher com código FIPE/ano quando tiver a doc)
+sample_query:
+  vehicle_type: "carros"
+  brand_code: null
+  model_code: null
+  year: null
+
+request_budget:
+  max_requests_per_minute: null
+  max_requests_per_day: null
+  note: "Respeitar cota do plano; FIPE muda no calendário oficial, não a cada requisição."
+
+# Mapeamento resposta FIPE -> colunas de referência no seu modelo (ex. valor_ref, mês_referencia)
+field_map: {}
