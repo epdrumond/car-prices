@@ -1,0 +1,24 @@
+# Example shape for discovery / data-contract output.
+# Copy to config/local/discovery.yaml (or split across several files under config/local/)
+# and fill in real field names, URLs, and notes. The config/local/ directory is gitignored.
+#
+# Committed examples must not name a specific website; use your local file for that.
+
+version: 1
+
+# Optional: high-level notes (kept local) — e.g. list of strings
+source_notes: []
+
+# Map from raw payload keys or selectors to canonical field names
+field_map: {}
+
+# Logical entities and how they relate (names only; no vendor-specific terms in repo)
+entities: []
+
+# Optional blocks to add in your local file (uncomment and fill there, not in the repo):
+# identity:
+#   listing_id_field: source_listing_id
+#   update_policy: last_seen_wins
+# vocabularies:
+#   fuel: [flex, gasoline, diesel, electric, hybrid, other, unknown]
+# known_gaps: []
