@@ -1,6 +1,6 @@
 # Car prices (Brazil) — project outline
 
-This document describes the **logical structure** of the work: phases, high-level approaches, and how **testing** supports each step. It intentionally avoids naming specific programming languages, frameworks, or products so the plan can stay stable as implementation choices evolve.
+This document describes the **logical structure** of the work: phases, high-level approaches, and how **testing** supports each step. It stays **tool-agnostic** for infrastructure where it helps (e.g. choice of database or CI), but **application code in this repository is written in Python**—ingestion, data processing, tests, and analysis scripts—unless a later phase explicitly adds another runtime.
 
 ---
 
@@ -15,6 +15,7 @@ This document describes the **logical structure** of the work: phases, high-leve
 
 ## Guiding principles
 
+- **Python:** Use **Python 3** for new code, with dependencies pinned where practical (e.g. `requirements.txt` or a lock file). Keep exploratory or one-off scripts easy to run and to cover with the same test stack as the rest of the project when they graduate into production code.
 - **Reproducibility:** The same inputs and configuration should yield the same stored dataset (within defined tolerances, e.g. time-dependent fields).
 - **Separation of concerns:** Ingestion, cleaning, storage, and analysis are separate layers with explicit contracts between them.
 - **Observability:** Each layer should report enough metadata (counts, errors, run identifiers) to debug failures without re-scraping blindly.
@@ -30,6 +31,7 @@ This document describes the **logical structure** of the work: phases, high-leve
 
 **Approach:**
 
+- **Exploration code (Python):** The `discovery/` package contains small scripts that call each candidate source with a **strictly limited** number of requests and write **raw JSON samples** to `discovery/output/` (gitignored) for later analysis. See `discovery/README.md`. This is separate from production ingestion; it exists to learn field names and shapes safely.
 - **Where the details live:** Record discovery and contract decisions in **machine-readable files** under a **gitignored** tree (e.g. `config/local/`) so application code and tooling can read them, while the **git remote** never receives source-specific names or URLs. Keep a **committed** example in `config/examples/` (shape only, no real endpoints or brands).
 - **`.gitignore`:** Ignore the local directory (see repo root `.gitignore`). Treat anything there as **sensitive to attribution** of the data source, not as secrets in the cryptographic sense—same rule: it does not ship to the remote.
 - Map **source fields** → **canonical names**, types, and allowed values (e.g. fuel type, body style, location).

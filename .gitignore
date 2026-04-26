@@ -1,3 +1,6 @@
 # Phase 1+ local discovery and source-specific config (URLs, hostnames, field notes)
 # Copy from config/examples/ into this tree; never commit real values.
 config/local/
+
+# Discovery phase: raw API samples (can be large; may include operational detail)
+discovery/output/
