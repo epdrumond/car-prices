@@ -7,11 +7,14 @@ Respect the service: few requests, small sample only.
 from __future__ import annotations
 
 import requests
-from discovery.http_utils import DEFAULT_HEADERS, DEFAULT_TIMEOUT
-from discovery.paths import OUTPUT_DIR
-from discovery.writers import write_json
+from discovery.paths import OUTPUT_DIR, write_json
 
 FIPE_BASE = "https://parallelum.com.br/fipe/api/v1"
+_DEFAULT_TIMEOUT = 25
+_DEFAULT_HEADERS = {
+    "User-Agent": "car-prices-discovery/0.1 (+research; Python requests)",
+    "Accept": "application/json",
+}
 OUTPUT_FILE = OUTPUT_DIR / "fipe_sample.json"
 
 
@@ -24,14 +27,14 @@ def collect_fipe_sample(
     Returns path to the written file.
     """
     session = requests.Session()
-    session.headers.update(DEFAULT_HEADERS)
-    r_marcas = session.get(f"{FIPE_BASE}/carros/marcas", timeout=DEFAULT_TIMEOUT)
+    session.headers.update(_DEFAULT_HEADERS)
+    r_marcas = session.get(f"{FIPE_BASE}/carros/marcas", timeout=_DEFAULT_TIMEOUT)
     r_marcas.raise_for_status()
     marcas: list[dict] = r_marcas.json()
 
     excerpt = marcas[:max_marcas_in_excerpt]
     m_mod = session.get(
-        f"{FIPE_BASE}/carros/marcas/{brand_marca_id}/modelos", timeout=DEFAULT_TIMEOUT
+        f"{FIPE_BASE}/carros/marcas/{brand_marca_id}/modelos", timeout=_DEFAULT_TIMEOUT
     )
     m_mod.raise_for_status()
     mod_body: dict = m_mod.json()
@@ -43,7 +46,7 @@ def collect_fipe_sample(
     mid = first["codigo"]
     r_years = session.get(
         f"{FIPE_BASE}/carros/marcas/{brand_marca_id}/modelos/{mid}/anos",
-        timeout=DEFAULT_TIMEOUT,
+        timeout=_DEFAULT_TIMEOUT,
     )
     r_years.raise_for_status()
     years: list[dict] = r_years.json()
@@ -53,7 +56,7 @@ def collect_fipe_sample(
     y0 = years[0]["codigo"]
     r_price = session.get(
         f"{FIPE_BASE}/carros/marcas/{brand_marca_id}/modelos/{mid}/anos/{y0}",
-        timeout=DEFAULT_TIMEOUT,
+        timeout=_DEFAULT_TIMEOUT,
     )
     r_price.raise_for_status()
     price: dict = r_price.json()

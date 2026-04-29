@@ -1,0 +1,5 @@
+# Copy to config/local/listings_page.yaml (gitignored).
+# Optional label avoids overwriting when comparing multiple sites locally.
+version: 1
+source_label: null
+# listings_page_url: "https://example.com/path"

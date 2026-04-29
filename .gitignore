@@ -4,3 +4,6 @@ config/local/
 
 # Discovery phase: raw API samples (can be large; may include operational detail)
 discovery/output/
+
+# Local virtual environment
+.venv/

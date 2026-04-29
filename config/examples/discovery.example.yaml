@@ -2,8 +2,7 @@
 # Copy to config/local/discovery.yaml (or split across several files under config/local/)
 # and fill in real field names, URLs, and notes. The config/local/ directory is gitignored.
 #
-# Per-source API placeholders: mercadolivre.example.yaml, icarros.example.yaml, olx.example.yaml,
-# fipe.example.yaml — see config/examples/README.md.
+# Optional: listings_page.example.yaml — see config/examples/README.md.
 #
 # Committed examples must not contain real credentials; use your local file for those.
 

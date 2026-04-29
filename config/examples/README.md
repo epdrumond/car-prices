@@ -1,17 +1,10 @@
-# Example configuration templates
+# Example configuration (committed templates)
 
-Each `*.example.yaml` file is a **placeholder** you copy into `config/local/` (drop the `.example` part or keep a name you prefer). The `config/local/` directory is **gitignored**; put real keys, tokens, and source-specific field maps there.
+Copy into `config/local/` (gitignored). See the root [README.md](../README.md) and [discovery/README.md](../discovery/README.md).
 
 | File | Purpose |
 |------|---------|
-| `discovery.example.yaml` | Generic data contract (entities, `field_map`, etc.) |
-| `mercadolivre.example.yaml` | Public REST API (vehicles) — [developers](https://developers.mercadolivre.com.br/) |
-| `icarros.example.yaml` | OAuth / partner API — [apidocs](https://www.icarros.com.br/apidocs/apiOauth.html) |
-| `olx.example.yaml` | Official developer areas — [developers](https://developers.olx.com.br/) |
-| `fipe.example.yaml` | Reference prices (complement to listings) — choose a provider and document its `base_url` and auth |
+| `discovery.example.yaml` | Canonical `field_map` / `entities` for the data model |
+| `listings_page.example.yaml` | `listings_page_url` + optional `source_label` for the generic HTML discovery script |
 
-```bash
-mkdir -p config/local
-cp config/examples/mercadolivre.example.yaml config/local/mercadolivre.yaml
-# edit config/local/mercadolivre.yaml
-```
+The FIPE sample URL is set in `discovery/sources/fipe.py` (`FIPE_BASE`); add a `config/local/` override there only if you later wire one.

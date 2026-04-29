@@ -31,7 +31,7 @@ This document describes the **logical structure** of the work: phases, high-leve
 
 **Approach:**
 
-- **Exploration code (Python):** The `discovery/` package contains small scripts that call each candidate source with a **strictly limited** number of requests and write **raw JSON samples** to `discovery/output/` (gitignored) for later analysis. See `discovery/README.md`. This is separate from production ingestion; it exists to learn field names and shapes safely.
+- **Exploration code (Python):** The `discovery/` package includes **FIPE** (reference table, small HTTP chain) and a **generic, single-page** HTML fetch that summarizes structure (metadata, embedded JSON, same-site links, `data-*` attributes) for any listings URL you configure in `config/local/`. It uses **strict** request limits; see `discovery/README.md`. This is separate from production ingestion.
 - **Where the details live:** Record discovery and contract decisions in **machine-readable files** under a **gitignored** tree (e.g. `config/local/`) so application code and tooling can read them, while the **git remote** never receives source-specific names or URLs. Keep a **committed** example in `config/examples/` (shape only, no real endpoints or brands).
 - **`.gitignore`:** Ignore the local directory (see repo root `.gitignore`). Treat anything there as **sensitive to attribution** of the data source, not as secrets in the cryptographic sense—same rule: it does not ship to the remote.
 - Map **source fields** → **canonical names**, types, and allowed values (e.g. fuel type, body style, location).
