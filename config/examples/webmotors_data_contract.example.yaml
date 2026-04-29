@@ -1,0 +1,40 @@
+# Data contract: Webmotors *list* page → one row per listing (discovery).
+# Parser: discovery/webmotors_jsonld.py → extract_webmotors_page_bundle()
+
+version: 1
+source_id: webmotors
+
+sources:
+  json_ld: { script_id: jsonld_offercatalog_rb, schema: "https://schema.org/OfferCatalog" }
+  model_year: { method: "regex on listing_url path", segment: "before ad id", example: "2018-2019" }
+  search_context: { script_id: __NEXT_DATA__, path: "props.pageProps + query" }
+  mileage_km: { from_html: "OEM: data-testid *odometer*; used horizontal: <p> ending in Km inside a _Card_ block" }
+  listing_location: { from_html: "OEM: location test ids; used: div with _Location_ in class, then <p> (e.g. City (UF) or City - UF)" }
+  note: { fallback: "Some fetches (skeleton / bot) return JSON-LD without card blocks; then mileage/location are null and field_sources use not_in_ssr" }
+
+# Canonical row (webmotors_parsed_listings.json list entries):
+canonical_listing:
+  title: { source: Vehicle.name, type: string }
+  price_brl: { source: Offer.price, type: string, notes: "parse int for analysis" }
+  price_currency: { source: Offer.priceCurrency }
+  listing_url: { source: Offer.url }
+  source_listing_id: { source: "numeric ad id from listing_url (e.g. …/comprar/…/67004287 or …/386043/quero-negociar)" }
+  image_urls: { source: Vehicle.image }
+  availability: { source: Offer.availability }
+  model_year_label: { source: "comprar URL segment", type: string, example: "2018-2019" }
+  model_year_start: { source: "parsed from model_year_label", type: int, optional: true }
+  model_year_end: { source: "parsed from model_year_label", type: int, optional: true }
+  mileage_km: { type: int, field_sources: "html.vehicle_card or not_in_ssr" }
+  listing_city: { type: string, field_sources: "html.vehicle_card or not_in_ssr" }
+  listing_state: { type: string, field_sources: "html.vehicle_card or not_in_ssr" }
+  listing_location_text: { type: string, field_sources: "html.vehicle_card or not_in_ssr" }
+  field_sources: { type: map, notes: "json_ld, listing_url_path, html.vehicle_card, or not_in_ssr" }
+
+# Page-level (same for all rows on that request):
+search_context:
+  next_query: { type: object, example: { tipoveiculo, estadocidade, page } }
+  search_estadocidade: { notes: "list filter geography (e.g. Brazil), not seller city" }
+  filter_location_state: { notes: "from props.pageProps.filters.location" }
+  filter_location_city: { }
+vehicle_card_dom: { cards_indexed: int, rows_merged_mileage: int, rows_merged_location: int }
+ssr_data_note: { type: string, notes: "how JSON-LD + DOM + search_context were combined" }

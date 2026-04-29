@@ -1,0 +1,10 @@
+# Copy to config/local/webmotors.yaml and set listings_page_url to your *search / estoque* page.
+# config/local/ is gitignored — do not commit real URLs if the remote must stay generic.
+#
+# Use one URL only; the discovery script makes a single GET with a long delay (see discovery/README.md).
+
+version: 1
+source_id: webmotors
+
+# Required for a real run (or use env WEBMOTORS_LISTINGS_URL instead):
+# listings_page_url: "https://..."

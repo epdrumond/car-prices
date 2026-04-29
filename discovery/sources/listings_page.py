@@ -36,7 +36,7 @@ def _f(name: str, default: float) -> float:
 
 MAX_REQUESTS = _i("SCRAPE_MAX_REQUESTS", 1)
 MIN_DELAY_S = _f("SCRAPE_MIN_DELAY_S", 5.0)
-MAX_BYTES = _i("SCRAPE_MAX_BYTES_SAVED", 150_000)
+MAX_BYTES = _i("SCRAPE_MAX_BYTES_SAVED", 1_000_000)
 TIMEOUT_S = _i("SCRAPE_TIMEOUT", 20)
 USER_AGENT = os.environ.get(
     "SCRAPE_USER_AGENT",
@@ -98,30 +98,19 @@ def _output_prefix(label: str | None) -> str:
     return "listings_page"
 
 
-def collect_listings_page_sample() -> str:
-    url, source_label, conf_path = _resolve_url()
-
-    prefix = _output_prefix(source_label)
-    meta_path = OUTPUT_DIR / f"{prefix}_sample.json"
-    body_path = OUTPUT_DIR / f"{prefix}_body.html"
-
-    if not url:
-        write_json(
-            meta_path,
-            {
-                "status": "skipped",
-                "message": "Set listings_page_url in config/local/listings_page.yaml, or LISTINGS_PAGE_URL (or legacy SCRAPE_URL).",
-                "config_file_hint": str(LOCAL_CONFIG),
-                "config_read": conf_path,
-                "constraints": {
-                    "max_requests": MAX_REQUESTS,
-                    "min_delay_s": MIN_DELAY_S,
-                    "max_bytes_saved": MAX_BYTES,
-                    "timeout_s": TIMEOUT_S,
-                },
-            },
-        )
-        return str(meta_path)
+def run_listings_discovery(
+    *,
+    url: str,
+    source_label: str | None,
+    file_prefix: str,
+    mode: str,
+    config_path_display: str | None,
+) -> str:
+    """
+    Shared one-GET + extract. ``file_prefix`` names ``{file_prefix}_sample.json`` and ``_body.html``.
+    """
+    meta_path = OUTPUT_DIR / f"{file_prefix}_sample.json"
+    body_path = OUTPUT_DIR / f"{file_prefix}_body.html"
 
     if MAX_REQUESTS != 1:
         write_json(
@@ -149,7 +138,12 @@ def collect_listings_page_sample() -> str:
     except requests.RequestException as e:
         write_json(
             meta_path,
-            {"status": "error", "url": url, "message": str(e), "requests_made": 0},
+            {
+                "status": "error",
+                "url": url,
+                "message": str(e),
+                "requests_made": 0,
+            },
         )
         return str(meta_path)
 
@@ -160,7 +154,7 @@ def collect_listings_page_sample() -> str:
     text = body.decode("utf-8", errors="replace")
     body_path.write_text(text, encoding="utf-8")
 
-    structure = {}
+    structure: object = {}
     if "html" in (r.headers.get("Content-Type") or "").lower() or "<html" in text[:5000].lower():
         try:
             structure = extract_listings_page_structure(text, r.url)
@@ -169,9 +163,10 @@ def collect_listings_page_sample() -> str:
 
     out: dict = {
         "status": "ok",
-        "mode": "listings_page_discovery",
+        "mode": mode,
         "source_label": source_label,
         "url": url,
+        "config_path_hint": config_path_display,
         "fetched_at_http_date": formatdate(usegmt=True),
         "http_status": r.status_code,
         "final_url": r.url,
@@ -188,5 +183,42 @@ def collect_listings_page_sample() -> str:
         },
         "extracted": structure,
     }
+    # Bot walls often return 200 with HTML; flag for review.
+    if r.status_code == 200 and isinstance(structure, dict):
+        pt = (structure.get("page") or {}).get("title") or ""
+        low = (pt + text[:8000]).lower()
+        if "denied" in low or "captcha" in low or "perimeter" in low or "px-captcha" in low:
+            out["anomaly"] = "Possible bot challenge in response (see body file)."
+
     write_json(meta_path, out)
     return str(meta_path)
+
+
+def collect_listings_page_sample() -> str:
+    url, source_label, conf_path = _resolve_url()
+    prefix = _output_prefix(source_label)
+    meta_path = OUTPUT_DIR / f"{prefix}_sample.json"
+    if not url:
+        write_json(
+            meta_path,
+            {
+                "status": "skipped",
+                "message": "Set listings_page_url in config/local/listings_page.yaml, or LISTINGS_PAGE_URL (or legacy SCRAPE_URL).",
+                "config_file_hint": str(LOCAL_CONFIG),
+                "config_read": conf_path,
+                "constraints": {
+                    "max_requests": MAX_REQUESTS,
+                    "min_delay_s": MIN_DELAY_S,
+                    "max_bytes_saved": MAX_BYTES,
+                    "timeout_s": TIMEOUT_S,
+                },
+            },
+        )
+        return str(meta_path)
+    return run_listings_discovery(
+        url=url,
+        source_label=source_label,
+        file_prefix=prefix,
+        mode="listings_page_discovery",
+        config_path_display=conf_path,
+    )
